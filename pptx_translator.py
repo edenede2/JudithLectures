@@ -78,14 +78,9 @@ def _detect_source_lang(prs):
 
 def _generate_template_from_prs(prs, source_lang, target_lang):
     lines = []
-    lines.append(f"# Translation Template\n\n")
-    lines.append(f"Source language: {source_lang}\n")
-    lines.append(f"Target language: {target_lang}\n\n")
-    lines.append("---\n")
 
     for i, slide in enumerate(prs.slides):
         slide_num = i + 1
-        lines.append(f"\n## Slide {slide_num}\n\n")
 
         text_shapes = []
         for shape in slide.shapes:
@@ -99,12 +94,12 @@ def _generate_template_from_prs(prs, source_lang, target_lang):
             text_shapes.append(shape)
 
         if not text_shapes:
-            lines.append("SKIP\n\n")
-            lines.append("---\n")
             continue
 
+        lines.append(f"## Slide {slide_num}\n\n")
+
         for shape in text_shapes:
-            lines.append(f"### Shape: {shape.name}\n")
+            lines.append(f"Shape: {shape.name}\n")
             for para in shape.text_frame.paragraphs:
                 parts = []
                 for run in para.runs:
@@ -119,7 +114,7 @@ def _generate_template_from_prs(prs, source_lang, target_lang):
                     lines.append(">\n")
             lines.append("\n")
 
-        lines.append("---\n")
+        lines.append("---\n\n")
 
     return "".join(lines)
 
@@ -496,25 +491,16 @@ def _apply(prs, translations, src_lang_code, tgt_lang_code):
 # ─── ChatGPT prompt ───────────────────────────────────────────
 
 def get_chatgpt_prompt(source_lang="Hebrew", target_lang="English"):
-    return f"""I have a presentation in {source_lang} that needs to be translated to {target_lang}.
+    return f"""Translate the attached template from {source_lang} to {target_lang}.
 
-I'm providing:
-1. The **PDF** of the presentation (attached file) — use this to read the actual text.
-2. A **translation template** (attached file or pasted below) — extracted from the PowerPoint file with exact shape names and paragraph structure.
+I attached a PDF of the presentation and a translation template (.md file).
 
-**Please translate the template following these rules:**
+Rules:
+- Keep `## Slide N` and `Shape: <name>` lines unchanged.
+- Replace each `>` line with a `- ` line containing the full {target_lang} translation. Use the PDF to get the complete text — do NOT shorten or summarize.
+- Keep the same number of `- ` lines as `>` lines per shape.
+- For blank `>` lines, write just `-`
+- Bold: `- **bold text**` | Mixed: `- normal **bold** normal`
+- Text already in {target_lang}: keep as-is.
 
-1. **Keep all headers exactly as-is**: `## Slide N` and `### Shape: <name>` must NOT be changed.
-2. **Replace each `>` line** with a `- ` line containing the {target_lang} translation.
-3. **Keep `SKIP`** for slides that do not need translation.
-4. **Translate the FULL content** of every paragraph. Do NOT abbreviate, summarize, or shorten — keep ALL details from the PDF.
-5. **Empty paragraphs**: for blank `>` lines, write just `-`
-6. **Bold formatting**: use double asterisks — `- **This text is bold**`
-7. **Mixed formatting**: `- Normal text **bold part** more normal text`
-8. **Keep text already in {target_lang}** unchanged.
-9. **Line breaks within one paragraph**: use `\\n` (literal backslash-n) in the text.
-10. **Same paragraph count**: each shape must have the EXACT same number of `-` lines as `>` lines in the template.
-
-**IMPORTANT**: Provide the COMPLETE, DETAILED translation. Do not shorten or omit any content. Use the PDF to read the full original text for each shape.
-
-**Output**: Return ONLY the filled template with no extra commentary."""
+Return the result as a downloadable .md file, no extra commentary."""
