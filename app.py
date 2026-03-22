@@ -12,8 +12,8 @@ from pptx_translator import (
     get_chatgpt_prompt,
 )
 
-st.set_page_config(page_title="PPTX Translator", page_icon="\U0001F4CA")
-st.title("\U0001F4CA Hebrew \u2192 English PPTX Translator")
+st.set_page_config(page_title="PPTX Translator")
+st.title(" Hebrew \u2192 English PPTX Translator")
 
 # ─── Step 1: Generate Template ────────────────────────────────
 
@@ -68,7 +68,7 @@ orig_pptx = st.file_uploader("Original PPTX", type=["pptx"], key="orig_upload")
 trans_md = st.file_uploader("Translated MD", type=["md", "txt"], key="md_upload")
 
 if orig_pptx is not None and trans_md is not None:
-    if st.button("Translate \U0001F680", type="primary"):
+    if st.button("Translate ", type="primary"):
         with st.spinner("Translating..."):
             pptx_bytes = orig_pptx.read()
             md_text = trans_md.read().decode("utf-8")
